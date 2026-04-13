@@ -6,6 +6,8 @@ use App\Http\Controllers\api\v1\MessageController;
 use App\Http\Controllers\api\v1\PostController;
 use App\Http\Controllers\api\v1\TopicController;
 use App\Http\Controllers\api\v1\TagController;
+use App\Http\Controllers\api\v1\VisitorController;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +40,20 @@ Route::middleware('api')->prefix('v1')->group(function () {
      */
     Route::get('import/{type}', [ImportController::class, 'importData'])
     ->where('type', 'sales|orders|stocks|incomes');
+
+    Route::post('visitor', [VisitorController::class, 'store']);
+
+    Route::get('aboutVisitor/{ip}', function (Request $request) {
+        $ip = $request->ip();
+        $token = env('TOKEN_IPINFO');
+        $response = Http::timeout(5)
+//            ->get("https://ipinfo.io/5.137.44.151/json?token=$token");
+            ->get("https://ipinfo.io/$ip/json?token=$token");
+        if ($response->ok()) {
+            return response()->json($response->json());
+        }
+        return response()->json(['error' => 'Geolocation service unavailable'], 503);
+    });
 });
 
 
