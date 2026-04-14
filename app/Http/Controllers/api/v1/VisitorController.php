@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Visitor;
+use Illuminate\Support\Carbon;
 
 class VisitorController extends Controller
 {
@@ -33,11 +34,31 @@ class VisitorController extends Controller
                 'message' => 'Invalid request data'
             ]);
         }
-        $validatedData['visited_at'] = date('Y-m-d H:i:s');
-        Visitor::create($validatedData);
+        $ipAddress = $validatedData['ip_address'];
+        $currentDateTime = Carbon::now();
+        $oneHourAgo = $currentDateTime->copy()->subHours(1);
+
+        $existingVisitor = Visitor::where('ip_address', $ipAddress)
+            ->where('visited_at', '>=', $oneHourAgo)
+            ->first();
+
+        if ($existingVisitor) {
+            $existingVisitor->update([
+                'last_visit' => $currentDateTime,
+                'referrer' => $validatedData['referrer'] ?? null,
+            ]);
+            return response()->json([
+                'success' => true
+            ]);
+        }
+
+        Visitor::create(array_merge($validatedData,[
+            'visited_at' => $currentDateTime,
+            'last_visit' => $currentDateTime,
+        ]));
         return response()->json([
             'success' => true,
-            'message' => 'Visitor created successfully'
+//            'message' => 'Visitor created successfully'
         ]);
     }
 }

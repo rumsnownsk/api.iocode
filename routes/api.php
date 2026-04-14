@@ -47,12 +47,11 @@ Route::middleware('api')->prefix('v1')->group(function () {
         $ip = $request->ip();
         $token = env('TOKEN_IPINFO');
         $response = Http::timeout(5)
-//            ->get("https://ipinfo.io/5.137.44.151/json?token=$token");
             ->get("https://ipinfo.io/$ip/json?token=$token");
         if ($response->ok()) {
             return response()->json($response->json());
         }
-        return response()->json(['error' => 'Geolocation service unavailable'], 503);
+        return ;
     });
 });
 

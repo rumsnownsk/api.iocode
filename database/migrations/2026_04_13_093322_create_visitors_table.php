@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -28,8 +27,13 @@ return new class extends Migration
             $table->string('browser', 20);
             $table->string('os', 20);
             $table->string('session_id');
+            $table->timestamp('last_visit')->nullable();
             $table->timestamp('visited_at');
             $table->timestamps();
+        });
+
+        Schema::table('visitors', function (Blueprint $table) {
+            $table->index(['ip_address', 'visited_at']);
         });
     }
 
